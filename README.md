@@ -9,7 +9,7 @@
 
 ## Introduction
 
-**PVM-IPC** provides users with sets of easy-to-use *Interprocess Communication* methods based on **OOP** methods.
+**PVM-IPC** provides users with sets of easy-to-use *Interprocess Communication* methods based on **OOP** approaches.
 
 ## Installation
 
