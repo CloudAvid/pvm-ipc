@@ -8,7 +8,6 @@ namespace ipc
 {
 namespace net
 {
-
 Server::Server(const string &pname) : Socket(pname), backlog("backlog", 0, -1)
 {
 }

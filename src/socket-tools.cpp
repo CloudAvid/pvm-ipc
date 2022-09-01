@@ -4,7 +4,6 @@ namespace ipc
 {
 namespace net
 {
-
 sockaddr_un SockTools::convertAddrToNativeUNIX(const char *path)
 {
     sockaddr_un addr;

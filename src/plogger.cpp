@@ -2,7 +2,6 @@
 
 namespace ipc
 {
-
 Translator IPCTranslator;
 
 /* Implementation of Translator Class.

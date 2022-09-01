@@ -8,7 +8,6 @@ namespace ipc
 {
 namespace net
 {
-
 Client::Client(const string &pname) : Socket(pname)
 {
 }

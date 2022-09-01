@@ -20,7 +20,6 @@ namespace ipc
 {
 namespace net
 {
-
 /**
  * @class Client.
  * @brief This class is wrapper around Client-sided socket.

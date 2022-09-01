@@ -19,7 +19,6 @@ namespace ipc
 {
 namespace net
 {
-
 /**
  * @class Server
  *

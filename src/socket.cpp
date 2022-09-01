@@ -7,7 +7,6 @@ namespace ipc
 {
 namespace net
 {
-
 Socket::Socket(const string &pname) :
     XMixParam(pname),
     fd("fd", 0, -1),

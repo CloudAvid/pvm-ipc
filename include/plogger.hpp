@@ -28,7 +28,6 @@ using plogger::Severity;
 
 namespace ipc
 {
-
 enum ELogID
 {
     /* Socket class */

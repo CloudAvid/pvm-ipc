@@ -18,7 +18,6 @@ namespace ipc
 {
 namespace net
 {
-
 /**
  * @class SockTools.
  * @brief Need set of tools to work with sockets.
