@@ -1,0 +1,60 @@
+Name:          @PACKAGE_RPMNAME@
+Version:       @PACKAGE_RPMVERSION@
+Release:       @RELEASE_VERSION@%{?dist}
+Summary:       ipc library from CloudAvid
+
+Group:   pvm-core
+License:  Pre
+URL:      http://www.cloudavid.com/
+Source0:   @PACKAGE_RPMNAME@-@PACKAGE_RPMVERSION@.tgz
+BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+
+#BuildRequires:
+Requires: pvm-plogger pvm-pparam
+
+%description
+pvm IPC tools
+%package        devel
+Summary:        Headers and libraries for ipc
+Group:          Development/Libraries
+Requires:       %{name} = %{version}-%{release}
+%description	devel
+pvm-ipc devel
+%prep
+%setup -q
+
+
+%build
+%configure --prefix=@prefix@
+make %{?_smp_mflags}
+
+
+%install
+rm -rf $RPM_BUILD_ROOT
+make install DESTDIR=$RPM_BUILD_ROOT
+
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+
+%files
+%defattr(-,root,root,-)
+@libdir@/libpipc.la
+@libdir@/libpipc.so
+@libdir@/libpipc.so.@MAJOR_VERSION@
+@libdir@/libpipc.so.@VERSION@
+
+%files devel
+%defattr(-,root,root,-)
+@libdir@/pkgconfig/@PACKAGE@.pc
+@includedir@/pvm/ipc/socket-types.hpp
+@includedir@/pvm/ipc/socket-tools.hpp
+@includedir@/pvm/ipc/socket.hpp
+@includedir@/pvm/ipc/socket-server.hpp
+@includedir@/pvm/ipc/socket-client.hpp
+@includedir@/pvm/ipc/plogger.hpp
+
+%postun -p /sbin/ldconfig
+
+%changelog
