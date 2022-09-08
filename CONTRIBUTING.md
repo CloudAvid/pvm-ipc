@@ -1,6 +1,6 @@
 # Contribution
 
-We appreciate any type of contribution to `PVM-IPC` (development or even bug reports), though for coherent and robust project some standard must be followed.
+We appreciate any type of contribution to `PVM-ACTREPO` (development or even bug reports), though for coherent and robust project some standard must be followed.
 
 ## Development
 
@@ -10,7 +10,7 @@ If you are capable of contributing code changes, we encourage you to do so. You 
 - providing test suites
 - so on.
 
-Although please review [issues](https://github.com/CloudAvid/pvm-ipc/issues) for more targeted developments.
+Although please review [issues](https://github.com/CloudAvid/pvm-actrepo/issues) for more targeted developments.
 
 ### Standards
 
@@ -22,9 +22,9 @@ Although please review [issues](https://github.com/CloudAvid/pvm-ipc/issues) for
 
 ## Bug report
 
-To report a malfunction in this project; first please check if it hasn't been reported yet in [issues](https://github.com/CloudAvid/pvm-ipc/issues).
+To report a malfunction in this project; first please check if it hasn't been reported yet in [issues](https://github.com/CloudAvid/pvm-actrepo/issues).
 
-If has not then create an associated [issue](https://github.com/CloudAvid/pvm-ipc/issues) for your report.
+If has not then create an associated [issue](https://github.com/CloudAvid/pvm-actrepo/issues) for your report.
 
 Your report must include these properties:
 
