@@ -33,23 +33,25 @@ Installation of `PVM-IPC` is based on `Autoconf` and `Autotools` build system.
     $ ./configure
     ```
 
-    > You'd be prompted with **unmet requirements** which **must be** fulfilled before proceeding.
+    > You'd be prompted with issues with installed or not-installed packages, resolve these issues then move on.
 
 3. After successful `Makefile` creation; let us proceed to `PVM-IPC` compilation and installation.
       - At this point (specificity *installation* part) you need `superuser` privilege.
 
     ```bash
-    # Compile the project.
-    $ make
-    # If you like, we could install it as well
-    $ make install
+    # Compile the project using multiple jobs.
+    $ make -j8
+    # To install the package first we need to create RPM package.
+    $ make rpm
+    # Then install the RPM packages with:
+    $ make install_rpm
     ```
 
 > Use pkg-config to discover the necessary include and linker arguments. Issue this:
 
 ```bash
-# Displays pparam necessary liker and compile flags.
-pkg-config libpparam-1.0 --cflags –libs
+# Displays PVM_IPC necessary liker and compile flags.
+pkg-config --cflags --libs pvm-ipc
 ```
 
 ## Documentation
