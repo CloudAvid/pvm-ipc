@@ -6,7 +6,7 @@ includedir=@includedir@
 Name: @PACKAGE_NAME@
 Description: Cloud avid IPC.
 URL: http://www.cloadavid.com
-Requires: plogger pparam
+Requires: plogger pparam gnutls
 Version: @PACKAGE_VERSION@
 Libs: -lpipc
 Cflags: -I${includedir}/pvm

@@ -30,6 +30,7 @@ Installation of `PVM-IPC` is based on `Autoconf` and `Autotools` build system.
     $ ./autogen.sh
 
     # Creates Makefiles for building project.
+    # to enable examples compilation, add `--enable-examples` to end of `./configure`
     $ ./configure
     ```
 

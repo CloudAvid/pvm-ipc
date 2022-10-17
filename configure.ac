@@ -21,13 +21,15 @@ AC_PROG_CXX
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 LT_INIT([disable-static], [enable-silent-rules])
 AC_PROG_LIBTOOL
-CXXFLAGS="-Wall -O0 -g -std=c++0x -fPIC"
+CXXFLAGS="-Wall -O0 -g -std=c++17 -fPIC"
 CFLAGS="-Wall -O0 -g -DSTAT_STATVFS"
 
 PKG_CHECK_MODULES([PPARAM], [pparam])
 PKG_CHECK_MODULES([PLOGGER], [plogger])
+PKG_CHECK_MODULES([GNUTLS], [gnutls >= 3.6.0])
 
 AC_CHECK_LIB([pparam], [loadXmlDoc])
+AC_CHECK_LIB([gnutls], [gnutls_init])
 
 AC_CHECK_HEADERS([fcntl.h stdlib.h string.h sys/file.h sys/socket.h syslog.h unistd.h])
 
@@ -61,8 +63,10 @@ AC_SUBST([MINOR_VERSION])
 AC_SUBST([MICRO_VERSION])
 AC_SUBST([RELEASE_VERSION])
 AC_SUBST([LIBPIPC_SO_VERSION])
+AC_SUBST([GNUTLS_CFLAGS])
+AC_SUBST([GNUTLS_LIBS])
 
-RPM_PASSPHRASE="keshmir110"
+RPM_PASSPHRASE="Smile:D"
 AC_SUBST([RPM_PASSPHRASE])
 
 test "x$prefix" = xNONE && prefix=/usr
@@ -76,9 +80,21 @@ bindir=${prefix}/sbin
 sysconfdir=/etc
 includedir=${prefix}/include
 
+AC_ARG_ENABLE([examples],
+    AS_HELP_STRING([--enable-examples],[Enable examples code compilation]),
+        [if test x$enableval = xyes; then
+            example_code=yes
+        else
+            example_code=no
+        fi], [example_code=no])
+
+AM_CONDITIONAL([EXAMPLE_CODE], [test x$example_code = xyes])
+
+AS_IF([test x$example_code = xyes],
+    [AC_CONFIG_FILES(examples/Makefile)])
+
 AC_CONFIG_FILES(Makefile
 	src/Makefile
-	examples/Makefile
 	package_name.pc
 	package_name.spec
 	package_name.info

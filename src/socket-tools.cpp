@@ -1,5 +1,7 @@
 #include "socket-tools.hpp"
 
+#include "plogger.hpp"
+
 namespace ipc
 {
 namespace net
@@ -50,7 +52,7 @@ std::string convertNativeToAddr(sockaddr_un addr)
 
 Address convertNativeToAddr(sockaddr_in addr)
 {
-    char ip[2048];
+    char ip[SOCKET_SMALL_BUFFER_SIZE];
     uint16_t port = -1;
 
     memset(&addr, 0, sizeof addr);
@@ -64,7 +66,7 @@ Address convertNativeToAddr(sockaddr_in addr)
 
 Address convertNativeToAddr(sockaddr_in6 addr)
 {
-    char ip[2048];
+    char ip[SOCKET_SMALL_BUFFER_SIZE];
     uint16_t port = -1;
 
     memset(&addr, 0, sizeof addr);

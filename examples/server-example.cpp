@@ -25,7 +25,7 @@ void thrd(Server *server)
 int main(int argc, char **argv)
 {
     // enable this for monitoring result.
-    PLogger::init("/home/manage/plogger.conf");
+    PLogger::init(PLOGGER_CONF_PATH);
 
     if (argc > 2) {
         ip = argv[1];

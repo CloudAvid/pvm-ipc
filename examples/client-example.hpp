@@ -12,3 +12,5 @@ using namespace ipc::net;
 using namespace std;
 
 void thrd();
+
+int main(int argc, char **argv);

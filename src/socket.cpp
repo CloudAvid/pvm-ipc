@@ -3,9 +3,7 @@
 #include "plogger.hpp"
 
 using namespace plogger;
-namespace ipc
-{
-namespace net
+namespace ipc::net
 {
 Socket::Socket(const string &pname) :
     XMixParam(pname),
@@ -57,7 +55,7 @@ void Socket::create_fd()
     CALL_FUNCTION;
 
     if (isOpen()) {
-        EXIT_FUNCTION_THROW(SOCKET_CREATION_FAILED_IS_OPEN, fd.get_value());
+        THROW_EXCEPTION(SOCKET_CREATION_FAILED_IS_OPEN, fd.get_value());
     }
     int _type, _domain;
 
@@ -69,7 +67,7 @@ void Socket::create_fd()
         _type = SOCK_DGRAM;
         break;
     default:
-        EXIT_FUNCTION_THROW(SOCKET_UNDEFINED_TYPE);
+        THROW_EXCEPTION(SOCKET_UNDEFINED_TYPE);
     }
 
     switch (get_domain()) {
@@ -86,16 +84,16 @@ void Socket::create_fd()
         create_nativeIP6addr();
         break;
     default:
-        EXIT_FUNCTION_THROW(SOCKET_UNDEFINED_DOMAIN);
+        THROW_EXCEPTION(SOCKET_UNDEFINED_DOMAIN);
     }
 
     fd = ::socket(_domain, _type | SOCK_CLOEXEC, protocol.get_value());
 
     if (fd.get_value() < 0) {
-        EXIT_FUNCTION_THROW(SOCKET_CREATION_FAILED, strerror(errno));
+        THROW_EXCEPTION(SOCKET_CREATION_FAILED, strerror(errno));
     }
 
-    PLOG(Severity::DEBUG, SOCKET_CREATION_SUCCESS, fd.get_value());
+    DEBUG(SOCKET_CREATION_SUCCESS, fd.get_value());
     EXIT_FUNCTION;
 }
 
@@ -114,11 +112,11 @@ void Socket::create_nativeIP6addr()
     nativeIP6addr = SockTools::convertAddrToNativeIP6(getAddr());
 }
 
-const ssize_t Socket::write(const char *buffer, const ssize_t size)
+const ssize_t Socket::write(const char *buffer, const size_t size)
 {
     ssize_t res = ::write(get_fd(), buffer, size);
     if (res < 0) {
-        PLOG(Severity::DEBUG, SOCKET_WRITE_FAILED, fd.get_value(), strerror(errno));
+        DEBUG(SOCKET_WRITE_FAILED, fd.get_value(), strerror(errno));
     }
     return res;
 }
@@ -128,7 +126,7 @@ const ssize_t Socket::write(const std::string &buffer)
     return write(buffer.c_str(), buffer.size());
 }
 
-const ssize_t Socket::write(const char *buffer, const ssize_t size, const int timeout)
+const ssize_t Socket::write(const char *buffer, const size_t size, const int timeout)
 {
     CALL_FUNCTION;
     int status;
@@ -146,7 +144,7 @@ const ssize_t Socket::write(const char *buffer, const ssize_t size, const int ti
         unsetFSFlags(O_NONBLOCK);
     } catch (Exception &e) {
         if (_blockFD() < 0) {
-            PLOG(Severity::DEBUG, SOCKET_FCNTL_NONBLOCK_FAILED, fd.get_value(), strerror(errno));
+            DEBUG(SOCKET_FCNTL_NONBLOCK_FAILED, fd.get_value(), strerror(errno));
         }
         EXIT_FUNCTION_THROW_EXCEPTION(e);
     }
@@ -157,7 +155,7 @@ const ssize_t Socket::send(const char *buffer, const size_t size, const int flag
 {
     ssize_t res = ::send(get_fd(), buffer, size, flags);
     if (res < 0) {
-        PLOG(Severity::DEBUG, SOCKET_WRITE_FAILED, fd.get_value(), strerror(errno));
+        DEBUG(SOCKET_WRITE_FAILED, fd.get_value(), strerror(errno));
     }
     return res;
 }
@@ -181,26 +179,60 @@ const ssize_t Socket::sendto(const char *buffer, const size_t size, const int fl
         addr = (sockaddr *) &nativeUNIXaddr;
         break;
     default:
-        EXIT_FUNCTION_THROW(SOCKET_UNDEFINED_DOMAIN);
+        THROW_EXCEPTION(SOCKET_UNDEFINED_DOMAIN);
     }
 
     if ((res = ::sendto(get_fd(), buffer, size, flags, addr, sizeof addr)) < 0) {
-        PLOG(Severity::DEBUG, SOCKET_WRITE_FAILED, fd.get_value(), strerror(errno));
+        DEBUG(SOCKET_WRITE_FAILED, fd.get_value(), strerror(errno));
     }
     return res;
 }
 
-const ssize_t Socket::read(char *buffer, const int buffSize)
+void Socket::fullWrite(const std::string &buffer)
+{
+    CALL_FUNCTION;
+
+    try {
+        fullWrite(buffer.c_str(), buffer.size());
+    } catch (Exception &e) {
+        EXIT_FUNCTION_THROW_EXCEPTION(e);
+    }
+
+    EXIT_FUNCTION;
+}
+
+void Socket::fullWrite(const char *buffer, const size_t size)
+{
+    CALL_FUNCTION;
+
+    auto len = size;
+    while (len > 0) {
+        errno = 0;
+        ssize_t result = write(buffer + (size - len), len);
+
+        if (result < 0 && errno == EINTR) {
+            continue;
+        } else if (result < 0) {
+            THROW_EXCEPTION(SOCKET_FULL_WRITE_FAILED, get_fd(), strerror(errno));
+        }
+
+        len -= result;
+    }
+
+    EXIT_FUNCTION;
+}
+
+const ssize_t Socket::read(char *buffer, const size_t buffSize)
 {
     memset(buffer, 0, buffSize);
     ssize_t res = ::read(get_fd(), buffer, buffSize - 1);
     if (res < 0) {
-        PLOG(Severity::DEBUG, SOCKET_READ_FAILED, fd.get_value(), strerror(errno));
+        DEBUG(SOCKET_READ_FAILED, fd.get_value(), strerror(errno));
     }
     return res;
 }
 
-const ssize_t Socket::read(char *buffer, const int buffSize, const int timeout)
+const ssize_t Socket::read(char *buffer, const size_t buffSize, const int timeout)
 {
     CALL_FUNCTION;
     int status;
@@ -217,7 +249,7 @@ const ssize_t Socket::read(char *buffer, const int buffSize, const int timeout)
         unsetFSFlags(O_NONBLOCK);
     } catch (Exception &e) {
         if (_blockFD() < 0) {
-            PLOG(Severity::DEBUG, SOCKET_FCNTL_NONBLOCK_FAILED, fd.get_value(), strerror(errno));
+            DEBUG(SOCKET_FCNTL_NONBLOCK_FAILED, fd.get_value(), strerror(errno));
         }
         EXIT_FUNCTION_THROW_EXCEPTION(e);
     }
@@ -229,7 +261,7 @@ const ssize_t Socket::recv(char *buffer, const size_t size, const int flags)
     memset(buffer, 0, size);
     ssize_t res = ::recv(get_fd(), buffer, size, flags);
     if (res < 0) {
-        PLOG(Severity::DEBUG, SOCKET_READ_FAILED, fd.get_value(), strerror(errno));
+        DEBUG(SOCKET_READ_FAILED, fd.get_value(), strerror(errno));
     }
     return res;
 }
@@ -253,15 +285,44 @@ const ssize_t Socket::recvfrom(char *buffer, const size_t size, const int flags)
         addr = (sockaddr *) &nativeUNIXaddr;
         break;
     default:
-        EXIT_FUNCTION_THROW(SOCKET_UNDEFINED_DOMAIN);
+        THROW_EXCEPTION(SOCKET_UNDEFINED_DOMAIN);
     }
 
     auto len = (socklen_t) sizeof addr;
     if ((res = ::recvfrom(get_fd(), buffer, size, flags, addr, &len)) < 0) {
-        PLOG(Severity::DEBUG, SOCKET_WRITE_FAILED, fd.get_value(), strerror(errno));
+        DEBUG(SOCKET_WRITE_FAILED, fd.get_value(), strerror(errno));
     }
 
     return res;
+}
+
+void Socket::fullRead(string &buffer)
+{
+    CALL_FUNCTION;
+    ssize_t readBytes = 0;
+    char *__buffer = new char[SOCKET_DEFAULT_BUFFER_SIZE];
+    memset(__buffer, 0, SOCKET_DEFAULT_BUFFER_SIZE);
+
+    while (true) {
+        errno = 0;
+        readBytes = read(__buffer, sizeof(__buffer) - 1);
+        if (readBytes > 0) {
+            __buffer[readBytes] = '\0';
+            buffer += __buffer;
+            memset(__buffer, 0, SOCKET_DEFAULT_BUFFER_SIZE);
+        } else if (readBytes == 0) {
+            break;
+        } else if (readBytes < 0 && errno == EINTR) {
+            continue;
+        } else {
+            SAFE_DELETE(__buffer);
+            THROW_EXCEPTION(SOCKET_FULL_READ_FAILED, get_fd(), strerror(errno));
+        }
+    }
+
+    SAFE_DELETE(__buffer);
+
+    EXIT_FUNCTION;
 }
 
 int Socket::_nonblockFD()
@@ -297,9 +358,9 @@ void Socket::close()
              * manual page, fd field will be set to zero meaning even though close
              * syscall failed we assume successful closing.
              */
-            PLOG(Severity::DEBUG, SOCKET_CLOSE_FAILED, fd.get_value(), strerror(errno));
+            DEBUG(SOCKET_CLOSE_FAILED, fd.get_value(), strerror(errno));
         } else {
-            PLOG(Severity::DEBUG, SOCKET_CLOSE_SUCCESS, fd.get_value());
+            DEBUG(SOCKET_CLOSE_SUCCESS, fd.get_value());
         }
         fd = 0;
     }
@@ -309,7 +370,7 @@ void Socket::close()
 void Socket::set_protocol(const int protocol)
 {
     if (isOpen()) {
-        PLOG(Severity::DEBUG, SOCKET_CANNOT_SET_PROTOCOL, fd.get_value());
+        DEBUG(SOCKET_CANNOT_SET_PROTOCOL, fd.get_value());
     } else {
         this->protocol = protocol;
     }
@@ -317,7 +378,7 @@ void Socket::set_protocol(const int protocol)
 void Socket::set_fd(const int fd)
 {
     if (isOpen()) {
-        PLOG(Severity::DEBUG, SOCKET_CANNOT_SET_FD, this->fd.get_value());
+        DEBUG(SOCKET_CANNOT_SET_FD, this->fd.get_value());
     } else {
         this->fd = fd;
     }
@@ -325,7 +386,7 @@ void Socket::set_fd(const int fd)
 void Socket::set_domain(const int domain)
 {
     if (isOpen()) {
-        PLOG(Severity::DEBUG, SOCKET_CANNOT_SET_DOMAIN, fd.get_value());
+        DEBUG(SOCKET_CANNOT_SET_DOMAIN, fd.get_value());
     } else {
         this->domain = domain;
     }
@@ -333,7 +394,7 @@ void Socket::set_domain(const int domain)
 void Socket::set_type(const int type)
 {
     if (isOpen()) {
-        PLOG(Severity::DEBUG, SOCKET_CANNOT_SET_TYPE, fd.get_value());
+        DEBUG(SOCKET_CANNOT_SET_TYPE, fd.get_value());
     } else {
         this->type = type;
     }
@@ -371,7 +432,7 @@ void Socket::setSockopt(const int optionLevel, const int optionName, const void 
     CALL_FUNCTION;
     int status = setsockopt(get_fd(), optionLevel, optionName, optionVal, len);
     if (status < 0) {
-        EXIT_FUNCTION_THROW(SOCKET_SET_OPTIONS_FAILED, fd.get_value(), strerror(errno));
+        THROW_EXCEPTION(SOCKET_SET_OPTIONS_FAILED, fd.get_value(), strerror(errno));
     }
     EXIT_FUNCTION;
 }
@@ -382,7 +443,7 @@ void Socket::getSockopt(const int optionLevel, const int optionName, void *optio
     CALL_FUNCTION;
     int status = getsockopt(fd.get_value(), optionLevel, optionName, optionVal, len);
     if (status < 0) {
-        EXIT_FUNCTION_THROW(SOCKET_GET_OPTIONS_FAILED, fd.get_value(), strerror(errno));
+        THROW_EXCEPTION(SOCKET_GET_OPTIONS_FAILED, fd.get_value(), strerror(errno));
     }
     EXIT_FUNCTION;
 }
@@ -399,7 +460,7 @@ Address Socket::getPeerName()
     case SockDom::domain::IPV6:
         return getIN6peer();
     default:
-        EXIT_FUNCTION_THROW(SOCKET_UNDEFINED_DOMAIN);
+        THROW_EXCEPTION(SOCKET_UNDEFINED_DOMAIN);
     }
 }
 
@@ -414,7 +475,7 @@ Address Socket::getUNIXpeer()
     memset(ip, 0, sizeof *ip);
 
     if (getpeername(get_fd(), (struct sockaddr *) &addr, &len) < 0) {
-        EXIT_FUNCTION_THROW(SOCKET_GET_PEER_FAILED, get_fd(), strerror(errno));
+        THROW_EXCEPTION(SOCKET_GET_PEER_FAILED, get_fd(), strerror(errno));
     }
 
     strncpy(ip, addr.sun_path, sizeof ip - 1);
@@ -434,7 +495,7 @@ Address Socket::getIN4peer()
     memset(ip, 0, sizeof *ip);
 
     if (getpeername(get_fd(), (struct sockaddr *) &addr, &len) < 0) {
-        EXIT_FUNCTION_THROW(SOCKET_GET_PEER_FAILED, get_fd(), strerror(errno));
+        THROW_EXCEPTION(SOCKET_GET_PEER_FAILED, get_fd(), strerror(errno));
     }
 
     inet_ntop(AF_INET, &addr.sin_addr, ip, sizeof ip);
@@ -455,7 +516,7 @@ Address Socket::getIN6peer()
     memset(ip, 0, sizeof *ip);
 
     if (getpeername(get_fd(), (struct sockaddr *) &addr, &len) < 0) {
-        EXIT_FUNCTION_THROW(SOCKET_GET_PEER_FAILED, get_fd(), strerror(errno));
+        THROW_EXCEPTION(SOCKET_GET_PEER_FAILED, get_fd(), strerror(errno));
     }
 
     inet_ntop(AF_INET6, &addr.sin6_addr, ip, sizeof ip);
@@ -512,7 +573,7 @@ void Socket::setFlags(const int type, const int bitmask)
 {
     CALL_FUNCTION;
     if (fcntl(fd.get_value(), type, bitmask) < 0) {
-        EXIT_FUNCTION_THROW(SOCKET_FCNTL_SET_FAILED, fd.get_value(), strerror(errno));
+        THROW_EXCEPTION(SOCKET_FCNTL_SET_FAILED, fd.get_value(), strerror(errno));
     }
     EXIT_FUNCTION;
 }
@@ -542,7 +603,7 @@ int Socket::getFlags(const int type)
     CALL_FUNCTION;
     int flags = fcntl(fd.get_value(), type);
     if (flags < 0) {
-        EXIT_FUNCTION_THROW(SOCKET_FCNTL_GET_FAILED, fd.get_value(), strerror(errno));
+        THROW_EXCEPTION(SOCKET_FCNTL_GET_FAILED, fd.get_value(), strerror(errno));
     }
     EXIT_FUNCTION_RETURN(flags);
 }
@@ -563,21 +624,21 @@ void Socket::checkTimeout(const int timeout, const uint32_t flags)
     epollEvent.data.fd = get_fd();
 
     if ((epollFD = epoll_create1(EPOLL_CLOEXEC)) < 0) {
-        EXIT_FUNCTION_THROW(SOCKET_EPOLL_CREATION_FAILED, get_fd(), strerror(errno));
+        THROW_EXCEPTION(SOCKET_EPOLL_CREATION_FAILED, get_fd(), strerror(errno));
     }
 
     if (epoll_ctl(epollFD, EPOLL_CTL_ADD, get_fd(), &epollEvent) < 0) {
         ::close(epollFD);
-        EXIT_FUNCTION_THROW(SOCKET_EPOLL_CANNOT_ADD, get_fd(), epollFD, strerror(errno));
+        THROW_EXCEPTION(SOCKET_EPOLL_CANNOT_ADD, get_fd(), epollFD, strerror(errno));
     }
 
     readyFD = epoll_wait(epollFD, epollEventList, 1, timeout);
     ::close(epollFD);
 
     if (readyFD == 0) {
-        EXIT_FUNCTION_THROW(SOCKET_TIMEOUT_EXPIRED, fd.get_value());
+        THROW_EXCEPTION(SOCKET_TIMEOUT_EXPIRED, fd.get_value());
     } else if (readyFD == -1) {
-        EXIT_FUNCTION_THROW(SOCKET_EPOLL_WAIT_FAILED, get_fd(), epollFD, strerror(errno));
+        THROW_EXCEPTION(SOCKET_EPOLL_WAIT_FAILED, get_fd(), epollFD, strerror(errno));
     }
 
     try {
@@ -591,10 +652,10 @@ void Socket::checkTimeout(const int timeout, const uint32_t flags)
     }
 
     if (val) {
-        EXIT_FUNCTION_THROW(SOCKET_OPERATION_FAILED, fd.get_value(), strerror(val));
+        THROW_EXCEPTION(SOCKET_OPERATION_FAILED, fd.get_value(), strerror(val));
     }
 
-    PLOG(Severity::DEBUG, SOCKET_OPERATION_SUCCESS, fd.get_value());
+    DEBUG(SOCKET_OPERATION_SUCCESS, fd.get_value());
     EXIT_FUNCTION;
 }
 
@@ -603,7 +664,7 @@ void Socket::shutdown(const int how)
     CALL_FUNCTION;
     int status = ::shutdown(get_fd(), how);
     if (status < 0) {
-        EXIT_FUNCTION_THROW(SOCKET_SHUTDOWN_FAILED, fd.get_value(), strerror(errno));
+        THROW_EXCEPTION(SOCKET_SHUTDOWN_FAILED, fd.get_value(), strerror(errno));
     }
     EXIT_FUNCTION;
 }
@@ -657,5 +718,4 @@ std::string Socket::get_unixAddr() const
     return unixAddr.get_value();
 }
 
-} // namespace net
-} // namespace ipc
+} // namespace ipc::net

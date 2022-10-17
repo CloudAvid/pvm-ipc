@@ -4,9 +4,7 @@
 
 using namespace plogger;
 
-namespace ipc
-{
-namespace net
+namespace ipc::net
 {
 Server::Server(const string &pname) : Socket(pname), backlog("backlog", 0, -1)
 {
@@ -27,10 +25,9 @@ void Server::listen()
 {
     CALL_FUNCTION;
     if (::listen(get_fd(), get_backlog()) < 0) {
-        EXIT_FUNCTION_THROW(SOCKET_LISTEN_FAILED, get_fd(), strerror(errno));
+        THROW_EXCEPTION(SOCKET_LISTEN_FAILED, get_fd(), strerror(errno));
     }
-    PLOG(Severity::DEBUG, SOCKET_LISTEN_SUCCESS, getAddr().first.c_str(), getAddr().second,
-         get_fd());
+    DEBUG(SOCKET_LISTEN_SUCCESS, getAddr().first.c_str(), getAddr().second, get_fd());
 
     EXIT_FUNCTION;
 }
@@ -44,10 +41,10 @@ int Server::accept()
                                 SOCK_CLOEXEC);
 
     if (newFD < 0) {
-        EXIT_FUNCTION_THROW(SOCKET_ACCEPT_FAILED, get_fd(), strerror(errno));
+        THROW_EXCEPTION(SOCKET_ACCEPT_FAILED, get_fd(), strerror(errno));
     }
 
-    PLOG(Severity::DEBUG, SOCKET_ACCEPT_SUCCESS, get_fd(), newFD);
+    DEBUG(SOCKET_ACCEPT_SUCCESS, get_fd(), newFD);
     EXIT_FUNCTION_RETURN(newFD);
 }
 
@@ -70,7 +67,7 @@ void Server::accept(Server &acceptedSocket)
     acceptedSocket.set_unixAddr(get_unixAddr());
     acceptedSocket.set_fd(newFD);
 
-    PLOG(Severity::DEBUG, SOCKET_ACCEPT_SUCCESS, get_fd(), newFD);
+    DEBUG(SOCKET_ACCEPT_SUCCESS, get_fd(), newFD);
     EXIT_FUNCTION;
 }
 
@@ -108,16 +105,17 @@ void Server::bind()
             bindToIN6();
             break;
         default:
-            EXIT_FUNCTION_THROW(SOCKET_UNDEFINED_DOMAIN);
+            THROW_EXCEPTION(SOCKET_UNDEFINED_DOMAIN);
         }
     } catch (Exception &e) {
         close();
         EXIT_FUNCTION_THROW_EXCEPTION(e);
     }
 
-    PLOG(Severity::DEBUG, SOCKET_BIND_SUCCESS, getAddr().first.c_str(), getAddr().second, get_fd());
+    DEBUG(SOCKET_BIND_SUCCESS, getAddr().first.c_str(), getAddr().second, get_fd());
     EXIT_FUNCTION;
 }
+
 void Server::bindToUNIX()
 {
     CALL_FUNCTION;
@@ -125,7 +123,7 @@ void Server::bindToUNIX()
     unlink(getAddr().first.c_str());
 
     if (::bind(get_fd(), (struct sockaddr *) &nativeUNIXaddr, sizeof(struct sockaddr_un)) < 0) {
-        EXIT_FUNCTION_THROW(SOCKET_BIND_FAILED, get_fd(), strerror(errno));
+        THROW_EXCEPTION(SOCKET_BIND_FAILED, get_fd(), strerror(errno));
     }
 
     EXIT_FUNCTION;
@@ -136,7 +134,7 @@ void Server::bindToIN4()
     CALL_FUNCTION;
 
     if (::bind(get_fd(), (struct sockaddr *) &nativeIP4addr, sizeof(struct sockaddr_in)) < 0) {
-        EXIT_FUNCTION_THROW(SOCKET_BIND_FAILED, get_fd(), strerror(errno));
+        THROW_EXCEPTION(SOCKET_BIND_FAILED, get_fd(), strerror(errno));
     }
 
     EXIT_FUNCTION;
@@ -147,7 +145,7 @@ void Server::bindToIN6()
     CALL_FUNCTION;
 
     if (::bind(get_fd(), (struct sockaddr *) &nativeIP6addr, sizeof(struct sockaddr_in6)) < 0) {
-        EXIT_FUNCTION_THROW(SOCKET_BIND_FAILED, get_fd(), strerror(errno));
+        THROW_EXCEPTION(SOCKET_BIND_FAILED, get_fd(), strerror(errno));
     }
 
     EXIT_FUNCTION;
@@ -162,5 +160,4 @@ void Server::set_backlog(const int backlog)
     this->backlog = backlog;
 }
 
-} // namespace net
-} // namespace ipc
+} // namespace ipc::net

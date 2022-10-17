@@ -10,13 +10,11 @@
  * (at your option) any later version.
  *
  * You should have received a copy of the GNU General Public License
- * along with foobar. If not, see <http://www.gnu.org/licenses/>
+ * along with pvm-ipc. If not, see <http://www.gnu.org/licenses/>
  */
-#include "socket-types.hpp"
+#include "socket-struct.hpp"
 
-namespace ipc
-{
-namespace net
+namespace ipc::net
 {
 /**
  * @class SockTools.
@@ -68,5 +66,4 @@ public:
     static Address convertNativeToAddr(sockaddr_in6 addr);
 };
 
-} // namespace net
-} // namespace ipc
+} // namespace ipc::net

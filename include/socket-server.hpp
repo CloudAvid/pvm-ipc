@@ -10,7 +10,7 @@
  * (at your option) any later version.
  *
  * You should have received a copy of the GNU General Public License
- * along with foobar. If not, see <http://www.gnu.org/licenses/>
+ * along with pvm-ipc. If not, see <http://www.gnu.org/licenses/>
  */
 #pragma once
 #include "socket.hpp"
@@ -83,7 +83,7 @@ public:
      * for accepted socket (smiliar to Socket Class).
      * @see  "Socket class's description for how to unset this flag"
      */
-    void accept(Server &acceptedSocket);
+    virtual void accept(Server &acceptedSocket);
 
     void set_backlog(const int backlog);
 
