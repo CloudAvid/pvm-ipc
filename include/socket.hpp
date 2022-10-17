@@ -10,15 +10,14 @@
  * (at your option) any later version.
  *
  * You should have received a copy of the GNU General Public License
- * along with foobar. If not, see <http://www.gnu.org/licenses/>
+ * along with pvm-ipc. If not, see <http://www.gnu.org/licenses/>
  */
 
 #pragma once
+#include "socket-struct.hpp"
 #include "socket-tools.hpp"
-#include "socket-types.hpp"
-namespace ipc
-{
-namespace net
+
+namespace ipc::net
 {
 /**
  * @class Socket
@@ -115,7 +114,7 @@ public:
      *
      * @note on error check errno for full description.
      */
-    virtual const ssize_t write(const char *buffer, const ssize_t size);
+    virtual const ssize_t write(const char *buffer, const size_t size);
 
     /**
      * @brief writes buffer to socket.
@@ -129,7 +128,7 @@ public:
      *
      * @warning this method non-block socket and block it by each call.
      */
-    virtual const ssize_t write(const char *buffer, const ssize_t size, const int timeout);
+    virtual const ssize_t write(const char *buffer, const size_t size, const int timeout);
 
     /**
      * @brief writes buffer to socket.
@@ -168,6 +167,34 @@ public:
      * @warning this method creates FD for transmission explicity,
      */
     virtual const ssize_t sendto(const char *buffer, const size_t size, const int flags);
+
+    /**
+     * @brief Writes buffer to socket "fully".
+     *
+     * @param buffer message which should be sent.
+     *
+     * @note this method is smiliar to reguler write except, when
+     * write fails to send buffer completely, it'll retries repeatedly untill successful transfer.
+     *
+     * @warning this method throws an exception on error.
+     * @warning this method potentially could be block "infinitely".
+     */
+    virtual void fullWrite(const std::string &buffer);
+
+    /**
+     * @brief Writes buffer to socket "fully".
+     *
+     * @param buffer message which should be sent.
+     * @param size is buffer size.
+     *
+     * @note this method is smiliar to regular  write except, when
+     * write fails to send buffer completely, it'll retries repeatedly untill successful transfer.
+     *
+     * @warning this method throws an exception on error.
+     * @warning this method potentially could be block "infinitely".
+     */
+    virtual void fullWrite(const char *buffer, const size_t size);
+
     /**
      * @brief read from socket by size of Buffsize.
      *
@@ -180,7 +207,7 @@ public:
      *
      * @warning this method non-block socket and block it by each call.
      */
-    virtual const ssize_t read(char *buffer, const int buffSize, const int timeout);
+    virtual const ssize_t read(char *buffer, const size_t buffSize, const int timeout);
 
     /**
      * @brief read from socket by size of Buffsize.
@@ -191,7 +218,7 @@ public:
      *
      * @note on error, check errno for full description.
      */
-    virtual const ssize_t read(char *buffer, const int buffSize);
+    virtual const ssize_t read(char *buffer, const size_t buffSize);
 
     /**
      * @brief read from socket by size of Buffsize.
@@ -222,11 +249,19 @@ public:
     virtual const ssize_t recvfrom(char *buffer, const size_t size, const int flags);
 
     /**
+     * @brief reads until EOF or intteruptions.
+     *
+     * @param buffer result-value of read data.
+     * @warning throws an exception on error.
+     */
+    virtual void fullRead(string &buffer);
+
+    /**
      * @brief close socket.
      *
      * @details this method set fd field to zero as well as closing socket.
      */
-    void close();
+    virtual void close();
 
     /**
      * @brief checking if socket is still open.
@@ -513,5 +548,4 @@ protected:
      */
     sockaddr_in6 nativeIP6addr;
 };
-} // namespace net
-} // namespace ipc
+} // namespace ipc::net

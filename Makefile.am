@@ -1,5 +1,12 @@
 ACLOCAL_AMFLAGS = -I m4
-SUBDIRS = src examples
+if EXAMPLE_CODE
+__PROGS=src examples
+else
+__PROGS=src
+endif
+
+SUBDIRS = $(__PROGS)
+DIST_SUBDIRS = $(__PROGS)
 EXTRA_DIST = autogen.sh
 
 pkgconfigdir= $(libdir)/pkgconfig
@@ -11,9 +18,7 @@ RPM_TOPDIR=`rpm --showrc | perl -n -e 'print if(s/.*_topdir\s+(.*)/$$1/)'`
 format:
 	./clangFormat.sh
 rpm:
-	./clangFormat.sh
 	$(MAKE) distdir ; 
-	cp examples/*.hpp $(PACKAGE)-$(VERSION)/examples/ ; 
 	tar czvf $(PACKAGE_TARNAME).tgz $(PACKAGE_TARNAME) ; 
 	$(RM) -rf $(PACKAGE_TARNAME) ; 
 	cp $(PACKAGE).spec $(RPM_TOPDIR)/SPECS/ ; 

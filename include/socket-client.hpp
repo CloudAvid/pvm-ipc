@@ -10,7 +10,7 @@
  * (at your option) any later version.
  *
  * You should have received a copy of the GNU General Public License
- * along with foobar. If not, see <http://www.gnu.org/licenses/>
+ * along with pvm-ipc. If not, see <http://www.gnu.org/licenses/>
  */
 
 #include "socket.hpp"
@@ -65,7 +65,7 @@ public:
      *
      * @warning this method throws an exception on error
      */
-    void connect(const int timeout = 0);
+    virtual void connect(const int timeout = 0);
 
 private:
     /**

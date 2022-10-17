@@ -8,3 +8,5 @@ using namespace std;
 using namespace ipc::net;
 
 void thrd(Server *server);
+
+int main(int argc, char **argv);

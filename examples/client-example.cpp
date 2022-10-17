@@ -55,8 +55,8 @@ void thrd()
 
 int main(int argc, char **argv)
 {
-    // enable this for monitoring result.
-    PLogger::init("/home/manage/plogger.conf");
+    // enable this for displaying logs.
+    PLogger::init(PLOGGER_CONF_PATH);
 
     if (argc > 2) {
         Addr = argv[1];

@@ -4,9 +4,7 @@
 
 using namespace plogger;
 
-namespace ipc
-{
-namespace net
+namespace ipc::net
 {
 Client::Client(const string &pname) : Socket(pname)
 {
@@ -36,7 +34,8 @@ void Client::connect(const int timeout)
             close();
             EXIT_FUNCTION_THROW_EXCEPTION(e);
         }
-        PLOG(Severity::DEBUG, SOCKET_TIMEOUT_SET, (timeout / 1000), (timeout % 1000));
+
+        DEBUG(SOCKET_TIMEOUT_SET, (timeout / 1000), (timeout % 1000));
     }
 
     errno = 0;
@@ -53,7 +52,7 @@ void Client::connect(const int timeout)
         break;
     default:
         close();
-        EXIT_FUNCTION_THROW(SOCKET_UNDEFINED_DOMAIN);
+        THROW_EXCEPTION(SOCKET_UNDEFINED_DOMAIN);
     }
 
     if (errno) {
@@ -66,15 +65,16 @@ void Client::connect(const int timeout)
                     checkTimeout(timeout, flags);
                     unsetFSFlags(O_NONBLOCK);
                 } else {
-                    EXIT_FUNCTION_THROW(SOCKET_CONNECTION_FAILED, fd.get_value(), strerror(errno));
+                    THROW_EXCEPTION(SOCKET_CONNECTION_FAILED, fd.get_value(), strerror(errno));
                 }
             } catch (Exception &e) {
                 close();
                 EXIT_FUNCTION_THROW_EXCEPTION(e);
             }
         } else {
+            int fileDes = get_fd();
             close();
-            EXIT_FUNCTION_THROW(SOCKET_CONNECTION_FAILED, fd.get_value(), strerror(errno));
+            THROW_EXCEPTION(SOCKET_CONNECTION_FAILED, fileDes, strerror(errno));
         }
     }
 
@@ -99,5 +99,4 @@ void Client::connectToIN6()
     ::connect(get_fd(), (struct sockaddr *) &nativeIP6addr, (socklen_t) len);
 }
 
-} // namespace net
-} // namespace ipc
+} // namespace ipc::net

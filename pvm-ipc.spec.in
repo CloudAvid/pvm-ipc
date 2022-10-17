@@ -10,7 +10,7 @@ Source0:   @PACKAGE_RPMNAME@-@PACKAGE_RPMVERSION@.tgz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 #BuildRequires:
-Requires: pvm-plogger pvm-pparam
+Requires: pvm-plogger pvm-pparam gnutls
 
 %description
 pvm IPC tools
@@ -48,11 +48,14 @@ rm -rf $RPM_BUILD_ROOT
 %files devel
 %defattr(-,root,root,-)
 @libdir@/pkgconfig/@PACKAGE@.pc
-@includedir@/pvm/ipc/socket-types.hpp
+@includedir@/pvm/ipc/macros.h
+@includedir@/pvm/ipc/socket-struct.hpp
 @includedir@/pvm/ipc/socket-tools.hpp
 @includedir@/pvm/ipc/socket.hpp
 @includedir@/pvm/ipc/socket-server.hpp
 @includedir@/pvm/ipc/socket-client.hpp
+@includedir@/pvm/ipc/socket-server-tls.hpp
+@includedir@/pvm/ipc/socket-client-tls.hpp
 @includedir@/pvm/ipc/plogger.hpp
 
 %postun -p /sbin/ldconfig
